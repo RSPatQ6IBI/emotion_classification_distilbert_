@@ -1,0 +1,8 @@
+[dataset_goemotions]
+dataset_goemotions_linkA_ = "https://storage.googleapis.com/gresearch/goemotions/data/full_dataset/goemotions_1.csv"
+dataset_goemotions_linkB_ = "https://storage.googleapis.com/gresearch/goemotions/data/full_dataset/goemotions_2.csv"
+dataset_goemotions_linkC_ = "https://storage.googleapis.com/gresearch/goemotions/data/full_dataset/goemotions_3.csv"
+goemotions_download_location_ = "data_goemotions_/data/full_dataset/"
+goemotions_mldata_location_ = "data_goemotions_/data/train_val_test_sets_/content/"
+
+
