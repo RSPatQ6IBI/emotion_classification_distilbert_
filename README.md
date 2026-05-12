@@ -30,7 +30,13 @@ Standard tokenizers sometimes miss the nuances of emotional sub-text. In this pr
 ### 2. Model Architecture 🧠
 We utilize **DistilBERT**, which retains roughly 97% of BERT's performance while being 40% smaller and 60% faster. This makes it ideal for deployment in real-time emotion detection systems.
 
-### 3. Training Logic ⚡
+### 3. 🚀 Speed-Dating with Hyperparameters: The LR Finder 🔍✨
+
+Finding the perfect **Learning Rate** doesn't have to be a guessing game of endless trial and error! 🎯 We integrated the **LR Finder** module to navigate the complex loss landscape with surgical precision. 📈 By performing a "mock" training run and steadily ramping up the learning rate, we can visualize exactly where the gradient is steepest. 📉 This allows us to pinpoint that **"Golden Mean"**—the sweet spot where the model learns at lightning speed without spiraling into chaotic divergence. 💥 It’s essentially a **GPS for optimization**, ensuring our DistilBERT model hits the ground running with the most efficient step size possible! 💎🌈
+![Learning rate finding routine](images_/lr_finder_routine.png)
+![ Learning rate finder curve](images_/lr_finder_.png)
+
+### 4. Training Logic ⚡
 The training is handled by a `LightningModule`, which organizes the code into:
 *   **Training Step:** Calculation of **Cross-Entropy Loss**.
 *   **Optimizer:** AdamW with a linear learning rate scheduler.
