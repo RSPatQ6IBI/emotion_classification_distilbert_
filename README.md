@@ -33,7 +33,7 @@ We utilize **DistilBERT**, which retains roughly 97% of BERT's performance while
 ### 3. 🚀 Speed-Dating with Hyperparameters: The LR Finder 🔍✨
 
 Finding the perfect **Learning Rate** doesn't have to be a guessing game of endless trial and error! 🎯 We integrated the **LR Finder** module to navigate the complex loss landscape with surgical precision. 📈 By performing a "mock" training run and steadily ramping up the learning rate, we can visualize exactly where the gradient is steepest. 📉 This allows us to pinpoint that **"Golden Mean"**—the sweet spot where the model learns at lightning speed without spiraling into chaotic divergence. 💥 It’s essentially a **GPS for optimization**, ensuring our DistilBERT model hits the ground running with the most efficient step size possible! 💎🌈
-![Learning rate finding routine](images_/lr_finder_routine.png)
+![Learning rate finding routine](images_/lr_finder_progress_.png)
 ![ Learning rate finder curve](images_/lr_finder_.png)
 
 ### 4. Training Logic ⚡
