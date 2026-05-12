@@ -42,6 +42,7 @@ The training is handled by a `LightningModule`, which organizes the code into:
 The model classifies text into the following categories:
 > *Admiration, Amusement, Anger, Annoyance, Approval, Caring, Confusion, Curiosity, Desire, Disappointment, Disapproval, Disgust, Gratitude, Grief, Joy, Love, Nervousness, Optimism, Pride, Realization, Relief, Remorse, Sadness, Surprise, and Neutral.*
 
+![Class distribution : Goemotions](images_/goemotion_class_distribution_.png)
 ---
 
 ## 🚀 Getting Started
@@ -49,3 +50,19 @@ The model classifies text into the following categories:
 ### Prerequisites
 ```bash
 pip install torch pytorch-lightning transformers datasets
+
+---
+
+## 📂 Project Structure
+*   `data/`: Scripts to load and preprocess GoEmotions.
+*   `tokenizer_config/`: Contains the generated `vocab.json` and `merges.txt`.
+*   `model.py`: The DistilBERT architecture wrapped in PyTorch Lightning.
+*   `trainer.py`: Main entry point for training and evaluation.
+
+---
+
+## 🤝 Contributing
+Feel free to open issues or submit pull requests to improve the accuracy or efficiency of the model!
+
+## 📜 License
+This project is licensed under the MIT License.
