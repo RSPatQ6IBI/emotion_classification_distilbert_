@@ -31,7 +31,7 @@ class EmoModel(nn.Module):
             layer.bias.data.zero_()
 
     def forward(self, input_, *args):
-      print("passed input -->> ", input)
+      print("passed input -->> ", input_)
       X, attention_mask = input_
       hidden_states = self.base_model(X, attention_mask=attention_mask)
       # maybe do some pooling / RNNs... go crazy here!

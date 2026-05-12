@@ -40,6 +40,7 @@ class EmoDataset(Dataset):
         self.class_column = "class"
         self.data = pd.read_csv(path, sep=";", header=None, names=[self.data_column, self.class_column],
                                engine="python")
+        print('READ THE FILE --- >> >> ', path, type(self.data))
 
     def __getitem__(self, idx):
         return self.data.loc[idx, self.data_column], self.data.loc[idx, self.class_column]

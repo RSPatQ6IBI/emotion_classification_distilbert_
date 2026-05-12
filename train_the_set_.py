@@ -28,8 +28,8 @@ if __name__ == "__main__":
     train_ds_ = EmoDataset(goemotions_ml_loc_+"train.txt")
     # batch = tokenizer(texts, padding=True, truncation=True, return_tensors="pt")
 
-    # print(train_ds_)
-    # text_ = (train_ds_[19][0])
+    print(train_ds_)
+    text_ = (train_ds_[19][0])
     # -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
     from tokenizer_fn_ import tokenize_function
     from transformers import AutoTokenizer, AutoModelForSequenceClassification
@@ -41,26 +41,31 @@ if __name__ == "__main__":
     any_random_entry_ = 174
     the_text_ = train_ds_[any_random_entry_][0]
     tokens_ = tokenizer(the_text_, padding="max_length", truncation=True, max_length=128)
-    # # print(type(tokens_))
-    # # print(tokens_['input_ids'])
-    # # print(tokens_['attention_mask'])
-    # # text = "Elvis is the king of rock!"
-    # from transformers import pipeline
-    # classifier = pipeline("sentiment-analysis", model=model_, tokenizer=tokenizer)
-    # classifier = pipeline("sentiment-analysis", model=model_, tokenizer=tokenizer)
-    # enc = tokenizer(the_text_)
-    # print(10*'-->>','\n ',the_text_, classifier(the_text_))
+    print(type(tokens_))
+    print(tokens_['input_ids'])
+    print(tokens_['attention_mask'])
+    text = "Elvis is the king of rock!"
+    
+    from transformers import pipeline
+    classifier = pipeline("sentiment-analysis", model=model_, tokenizer=tokenizer)
+    classifier = pipeline("sentiment-analysis", model=model_, tokenizer=tokenizer)
+    enc = tokenizer(the_text_)
+    print(10*'-->>','\n ',text, classifier(text))
+    print(10*'-->>','\n ',the_text_, classifier(the_text_))
 
     out = model_(torch.tensor(tokens_["input_ids"]).unsqueeze(0), torch.tensor(tokens_["attention_mask"]).unsqueeze(0))
-    # out = model_(torch.tensor(res), torch.tensor(res))
-    print(out)
+    # # out = model_(torch.tensor(res), torch.tensor(res))
+    print(10*'..-->>','\n ',out)
 
     # tokenized_datasets = dataset.map(tokenize_function, batched=True)
 
-    # from transformers import AutoModelWithLMHead, AutoTokenizer
-    # import torch
-    # classifier = EmoModel(AutoModelWithLMHead.from_pretrained("distilroberta-base").base_model, 3)
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+    import torch
+    classifier = EmoModel(AutoModelForCausalLM.from_pretrained("distilroberta-base").base_model, 3)
 
-    # X = torch.tensor(enc["input_ids"]).unsqueeze(0).to('cpu')
-    # attn = torch.tensor(enc["attention_mask"]).unsqueeze(0).to('cpu') 
+    ##__##__##__##__##
+    X = torch.tensor(enc["input_ids"]).unsqueeze(0).to('cpu')
+    attn = torch.tensor(enc["attention_mask"]).unsqueeze(0).to('cpu') 
 
+    print(X, attn)
+    print(classifier((X, attn)))
