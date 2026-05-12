@@ -74,7 +74,7 @@ class TrainingModule(pl.LightningModule):
         return self.step(batch, "test")
 
     def train_dataloader(self):
-        print('CREATING TRAIN DATALOADER -- >> ')
+        # print('CREATING TRAIN DATALOADER -- >> ')
         return self.create_data_loader(self.hparams.train_path, shuffle=True)
 
     def val_dataloader(self):
@@ -127,18 +127,18 @@ hparams_tmp = Namespace(
     accumulate_grad_batches=1,
 )
 module = TrainingModule(hparams_tmp)
-print('Loaded module -- >> ',type(module.train_dataloader()))
-print(module.train_dataloader())
-print('Iterating on dataloader -- >> ')
-data_iter = iter(module.train_dataloader())
-A, B = next(data_iter)
-print('>>--->><<----<<',A)
-print('>>--->><<----<<',B)
+# print('Loaded module -- >> ',type(module.train_dataloader()))
+# print(module.train_dataloader())
+# print('Iterating on dataloader -- >> ')
+# data_iter = iter(module.train_dataloader())
+# A, B = next(data_iter)
+# print('>>--->><<----<<',A)
+# print('>>--->><<----<<',B)
 criterion = nn.CrossEntropyLoss()
 optimizer = AdamW(module.parameters(), lr=5e-7) ## lower bound LR
-print('Learning rate finder : Initialization -- >> ')
+# print('Learning rate finder : Initialization -- >> ')
 lr_finder = LRFinder(module, optimizer, criterion, device="cpu")
-print('Learning rate finder : Range test -- >> ')
+# print('Learning rate finder : Range test -- >> ')
 lr_finder.range_test(module.train_dataloader(), end_lr=100, num_iter=100) # , accumulation_steps=hparams_tmp.accumulate_grad_batches)
 lr_finder.plot()
 # # lr_finder.reset()
