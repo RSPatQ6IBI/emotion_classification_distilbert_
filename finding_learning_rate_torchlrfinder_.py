@@ -40,22 +40,35 @@ class TokenizersCollateFn:
 
       return (sequences_padded, attention_masks_padded), labels
 
+
+
+
+
+
 class TrainingModule(pl.LightningModule):
     def __init__(self, hparams):
         super().__init__()
-        self.model = EmoModel(AutoModelForCausalLM.from_pretrained("distilroberta-base").base_model, 30) #len(desired_emotions_lab_))
-        self.loss = nn.CrossEntropyLoss() ## combines LogSoftmax() and NLLLoss()
-        #self.hparams = hparams
+        print(f"🏗️  Initializing TrainingModule with model: distilroberta-base")
+        self.model = EmoModel(AutoModelForCausalLM.from_pretrained("distilroberta-base").base_model, 30)
+        self.loss = nn.CrossEntropyLoss() 
         self.hparams.update(vars(hparams))
+        print(f"✅ Hyperparameters loaded: {self.hparams}")
 
     def step(self, batch, step_name="train"):
         X, y = batch
-        loss = self.loss(self.forward(X), y)
+        logits = self.forward(X)
+        loss = self.loss(logits, y)
+        
         loss_key = f"{step_name}_loss"
         tensorboard_logs = {loss_key: loss}
 
+        # Debug print for every 50th batch to avoid terminal spam
+        if self.global_step % 50 == 0:
+            emoji = "🔥" if step_name == "train" else "🧪"
+            print(f"{emoji} [{step_name.upper()}] Step: {self.global_step} | Loss: {loss.item():.4f}")
+
         return { ("loss" if step_name == "train" else loss_key): loss, 'log': tensorboard_logs,
-               "progress_bar": {loss_key: loss}}
+                 "progress_bar": {loss_key: loss}}
 
     def forward(self, X, *args):
         return self.model(X, *args)
@@ -68,49 +81,59 @@ class TrainingModule(pl.LightningModule):
 
     def validation_end(self, outputs: List[dict]):
         loss = torch.stack([x["val_loss"] for x in outputs]).mean()
+        print(f"📊 [EPOCH END] Average Validation Loss: {loss:.4f} 📉")
         return {"val_loss": loss}
 
     def test_step(self, batch, batch_idx):
         return self.step(batch, "test")
 
     def train_dataloader(self):
-        # print('CREATING TRAIN DATALOADER -- >> ')
+        print(f"📂 Loading Train Dataloader from: {self.hparams.train_path} 🟢")
         return self.create_data_loader(self.hparams.train_path, shuffle=True)
 
     def val_dataloader(self):
+        print(f"📂 Loading Val Dataloader from: {self.hparams.val_path} 🟡")
         return self.create_data_loader(self.hparams.val_path)
 
     def test_dataloader(self):
+        print(f"📂 Loading Test Dataloader from: {self.hparams.test_path} 🔵")
         return self.create_data_loader(self.hparams.test_path)
 
     def create_data_loader(self, ds_path: str, shuffle=False):
-        return DataLoader(
-                    EmoDataset(ds_path),
-                    batch_size=self.hparams.batch_size,
-                    shuffle=shuffle,
-                    collate_fn=TokenizersCollateFn()
-        )
+        try:
+            loader = DataLoader(
+                        EmoDataset(ds_path),
+                        batch_size=self.hparams.batch_size,
+                        shuffle=shuffle,
+                        collate_fn=TokenizersCollateFn()
+            )
+            return loader
+        except Exception as e:
+            print(f"❌ Error loading data from {ds_path}: {e}")
+            raise e
 
     @lru_cache()
     def total_steps(self):
-        return len(self.train_dataloader()) // self.hparams.accumulate_grad_batches * self.hparams.epochs
+        steps = len(self.train_dataloader()) // self.hparams.accumulate_grad_batches * self.hparams.epochs
+        print(f"🔢 Total Training Steps calculated: {steps}")
+        return steps
 
     def configure_optimizers(self):
-        ## use AdamW optimizer -- faster approach to training NNs
-        ## read: https://www.fast.ai/2018/07/02/adam-weight-decay/
+        print(f"⚙️  Configuring Optimizers (AdamW) and LR Scheduler...")
         optimizer = AdamW(self.model.parameters(), lr=self.hparams.lr)
+        
+        t_steps = self.total_steps()
         lr_scheduler = get_linear_schedule_with_warmup(
                     optimizer,
                     num_warmup_steps=self.hparams.warmup_steps,
-                    num_training_steps=self.total_steps(),
+                    num_training_steps=t_steps,
         )
+        print(f"🚀 Optimizer ready. Warmup steps: {self.hparams.warmup_steps} | Total: {t_steps}")
         return [optimizer], [{"scheduler": lr_scheduler, "interval": "step"}]
-    
 
-    
-# from pytorch_lr_finder.torch_lr_finder import LRFinder
-
-lr=0.1 ## uper bound LR
+# --- Initialization ---
+print("🏁 Starting Project Setup...")
+lr=0.1 
 goemotions_location_ = "data_goemotions_/data/train_val_test_sets_/content/"
 train_path = goemotions_location_+"train.txt"
 val_path = goemotions_location_+"val.txt"
@@ -126,7 +149,101 @@ hparams_tmp = Namespace(
     lr=lr,
     accumulate_grad_batches=1,
 )
+
 module = TrainingModule(hparams_tmp)
+print("✨ Module successfully instantiated and ready for Trainer!")
+
+
+
+
+
+# class TrainingModule(pl.LightningModule):
+#     def __init__(self, hparams):
+#         super().__init__()
+#         self.model = EmoModel(AutoModelForCausalLM.from_pretrained("distilroberta-base").base_model, 30) #len(desired_emotions_lab_))
+#         self.loss = nn.CrossEntropyLoss() ## combines LogSoftmax() and NLLLoss()
+#         #self.hparams = hparams
+#         self.hparams.update(vars(hparams))
+
+#     def step(self, batch, step_name="train"):
+#         X, y = batch
+#         loss = self.loss(self.forward(X), y)
+#         loss_key = f"{step_name}_loss"
+#         tensorboard_logs = {loss_key: loss}
+
+#         return { ("loss" if step_name == "train" else loss_key): loss, 'log': tensorboard_logs,
+#                "progress_bar": {loss_key: loss}}
+
+#     def forward(self, X, *args):
+#         return self.model(X, *args)
+
+#     def training_step(self, batch, batch_idx):
+#         return self.step(batch, "train")
+
+#     def validation_step(self, batch, batch_idx):
+#         return self.step(batch, "val")
+
+#     def validation_end(self, outputs: List[dict]):
+#         loss = torch.stack([x["val_loss"] for x in outputs]).mean()
+#         return {"val_loss": loss}
+
+#     def test_step(self, batch, batch_idx):
+#         return self.step(batch, "test")
+
+#     def train_dataloader(self):
+#         # print('CREATING TRAIN DATALOADER -- >> ')
+#         return self.create_data_loader(self.hparams.train_path, shuffle=True)
+
+#     def val_dataloader(self):
+#         return self.create_data_loader(self.hparams.val_path)
+
+#     def test_dataloader(self):
+#         return self.create_data_loader(self.hparams.test_path)
+
+#     def create_data_loader(self, ds_path: str, shuffle=False):
+#         return DataLoader(
+#                     EmoDataset(ds_path),
+#                     batch_size=self.hparams.batch_size,
+#                     shuffle=shuffle,
+#                     collate_fn=TokenizersCollateFn()
+#         )
+
+#     @lru_cache()
+#     def total_steps(self):
+#         return len(self.train_dataloader()) // self.hparams.accumulate_grad_batches * self.hparams.epochs
+
+#     def configure_optimizers(self):
+#         ## use AdamW optimizer -- faster approach to training NNs
+#         ## read: https://www.fast.ai/2018/07/02/adam-weight-decay/
+#         optimizer = AdamW(self.model.parameters(), lr=self.hparams.lr)
+#         lr_scheduler = get_linear_schedule_with_warmup(
+#                     optimizer,
+#                     num_warmup_steps=self.hparams.warmup_steps,
+#                     num_training_steps=self.total_steps(),
+#         )
+#         return [optimizer], [{"scheduler": lr_scheduler, "interval": "step"}]
+    
+
+    
+# # from pytorch_lr_finder.torch_lr_finder import LRFinder
+
+# lr=0.1 ## uper bound LR
+# goemotions_location_ = "data_goemotions_/data/train_val_test_sets_/content/"
+# train_path = goemotions_location_+"train.txt"
+# val_path = goemotions_location_+"val.txt"
+# test_path = goemotions_location_+"test.txt"
+
+# hparams_tmp = Namespace(
+#     train_path=train_path,
+#     val_path=val_path,
+#     test_path=test_path,
+#     batch_size=16,
+#     warmup_steps=100,
+#     epochs=1,
+#     lr=lr,
+#     accumulate_grad_batches=1,
+# )
+# module = TrainingModule(hparams_tmp)
 # print('Loaded module -- >> ',type(module.train_dataloader()))
 # print(module.train_dataloader())
 # print('Iterating on dataloader -- >> ')
