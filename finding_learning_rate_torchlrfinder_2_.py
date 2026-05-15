@@ -107,6 +107,7 @@ class TrainingModule(pl.LightningModule):
                         shuffle=shuffle,
                         collate_fn=TokenizersCollateFn()
             )
+            print(f"📊 Data loader created and ready for {ds_path}!")
             return loader
         except Exception as e:
             print(f"❌ Error loading data from {ds_path}: {e}")
